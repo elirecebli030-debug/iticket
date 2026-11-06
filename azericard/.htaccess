@@ -1,4 +1,8 @@
 Options -Indexes
+
+# PHP fayllarına birbaşa GET girişini blokla, amma POST-a icazə ver
 <FilesMatch "\.(php|php5|phtml)$">
-    Require all denied
+    <If "%{REQUEST_METHOD} == 'GET'">
+        Require all denied
+    </If>
 </FilesMatch>

