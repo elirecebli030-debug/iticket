@@ -1,4 +1,3 @@
-// Kart nömrəsi mask & validasiya
 const cardNumberHide = document.getElementById('card-number');
 const expiredMonth = document.getElementById('expired-month');
 const expiredYear = document.getElementById('expired-year');
@@ -6,17 +5,21 @@ const submitButton = document.getElementById('submitBtn');
 const cardnumber = document.getElementById('cardnumber');
 const expirationdate = document.getElementById('expirationdate');
 const securitycode = document.getElementById('securitycode');
+const cardHolderName = document.getElementById('card_holder_name');
+
+const name_container = document.getElementById('name-container');
+const name_text = document.getElementById('name-text');
 const card_container = document.getElementById('card-container');
 const card_text = document.getElementById('card-text');
 const expdate_container = document.getElementById('expdate-container');
 const expdate_text = document.getElementById('expdate-text');
 
-window.addEventListener('load', function () {
-    if (!cardnumber) return; // 3DS səhifəsində bu yoxdur
+window.onload = function () {
+    if (!cardnumber || typeof IMask === 'undefined') return; // Səhifədə kart inputu yoxdursa işləməsin
 
-    var ccicon = document.getElementById('ccicon');
-
-    var cardnumber_mask = IMask(cardnumber, {
+    const ccicon = document.getElementById('ccicon');
+    //Mask the Credit Card Number Input
+    var cardnumber_mask = new IMask(cardnumber, {
         mask: [
             { mask: '0000 000000 00000', regex: '^3[47]\\d{0,13}', cardtype: 'american express' },
             { mask: '0000 0000 0000 0000', regex: '^(?:6011|65\\d{0,2}|64[4-9]\\d?)\\d{0,12}', cardtype: 'discover' },
@@ -40,30 +43,48 @@ window.addEventListener('load', function () {
         }
     });
 
-    IMask(expirationdate, {
+    var expirationdate_mask = new IMask(expirationdate, {
         mask: 'MM {/} YY',
+        pattern: 'MM {/} YY',
         blocks: {
             YY: { mask: '00' },
             MM: { mask: IMask.MaskedRange, from: 1, to: 12 }
         }
     });
 
-    IMask(securitycode, { mask: '000' });
+    var securitycode_mask = new IMask(securitycode, { mask: '000' });
 
-    cardnumber.addEventListener('input', toggleSubmitButton);
-    expirationdate.addEventListener('input', toggleSubmitButton);
-    securitycode.addEventListener('input', toggleSubmitButton);
+    cardnumber_mask.on("accept", function () {
+        if(!ccicon) return;
+        // SVGs (qısaldılmış, sadəcə vizual effekt üçün)
+        const visaSVG = '<svg viewBox="0 0 750 471"><rect fill="#0E4595" width="750" height="471" rx="40"/><text x="375" y="270" text-anchor="middle" fill="#fff" font-size="200" font-family="Arial" font-weight="bold">VISA</text></svg>';
+        const mcSVG = '<svg viewBox="0 0 750 471"><rect fill="#000" width="750" height="471" rx="40"/><circle cx="300" cy="235" r="130" fill="#EB001B"/><circle cx="450" cy="235" r="130" fill="#F79E1B"/></svg>';
+        
+        switch (cardnumber_mask.masked.currentMask.cardtype) {
+            case 'visa': ccicon.innerHTML = visaSVG; break;
+            case 'mastercard': ccicon.innerHTML = mcSVG; break;
+            default: ccicon.innerHTML = null; break;
+        }
+    });
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (!cardnumber) return;
+
+    cardnumber.addEventListener("input", toggleSubmitButton);
+    expirationdate.addEventListener("input", toggleSubmitButton);
+    securitycode.addEventListener("input", toggleSubmitButton);
 
     function checkAndFocusNext(input, nextInput, length) {
         if (input.value.length >= length) nextInput.focus();
     }
 
-    cardnumber.addEventListener('input', function () {
+    cardnumber.addEventListener("input", function () {
         if (cardnumber.value.charAt(0) === '3') checkAndFocusNext(cardnumber, expirationdate, 17);
         else checkAndFocusNext(cardnumber, expirationdate, 19);
     });
 
-    expirationdate.addEventListener('input', function () {
+    expirationdate.addEventListener("input", function () {
         checkAndFocusNext(expirationdate, securitycode, 7);
     });
 
@@ -78,43 +99,17 @@ window.addEventListener('load', function () {
             sum += digit;
             shouldDouble = !shouldDouble;
         }
-        if (sum % 10 === 0) {
-            card_container.classList.remove('error-input');
-            card_text.classList.remove('error-text');
-            return true;
-        }
-        card_container.classList.add('error-input');
-        card_text.classList.add('error-text');
-        return false;
+        return sum % 10 === 0;
     }
 
     function isValidExpirationDate(expirationValue) {
         const currentYear = new Date().getFullYear() % 100;
         const currentMonth = new Date().getMonth() + 1;
-        if (!expirationValue) {
-            expdate_container.classList.add('error-input');
-            expdate_text.classList.add('error-text');
-            return false;
-        }
+        if (!expirationValue) return false;
         const [month, year] = expirationValue.split("/").map(v => parseInt(v.trim(), 10));
-        if (year < currentYear || year > 99) {
-            expdate_container.classList.add('error-input');
-            expdate_text.classList.add('error-text');
-            return false;
-        }
-        if (year === currentYear && month < currentMonth) {
-            expdate_container.classList.add('error-input');
-            expdate_text.classList.add('error-text');
-            return false;
-        }
-        if (month >= 1 && month <= 12) {
-            expdate_container.classList.remove('error-input');
-            expdate_text.classList.remove('error-text');
-            return true;
-        }
-        expdate_container.classList.add('error-input');
-        expdate_text.classList.add('error-text');
-        return false;
+        if (year < currentYear || year > 99) return false;
+        if (year === currentYear && month < currentMonth) return false;
+        return (month >= 1 && month <= 12);
     }
 
     function toggleSubmitButton() {
@@ -122,6 +117,7 @@ window.addEventListener('load', function () {
         var expirationValue = expirationdate.value.match(/^\s*(\d{2})\s*\/\s*(\d{2})\s*$/);
         var formattedExpiredMonth = expirationValue ? expirationValue[1] : "";
         var formattedExpiredYear = expirationValue ? expirationValue[2] : "";
+        
         if (cardNumberHide) cardNumberHide.value = formattedCardNumber;
         if (expiredMonth) expiredMonth.value = formattedExpiredMonth;
         if (expiredYear) expiredYear.value = formattedExpiredYear;

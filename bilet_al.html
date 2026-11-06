@@ -2,12 +2,12 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Oturacaq Seçimi</title>
     <style>
         body { margin: 0; padding: 0; background: #f0f0f0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: sans-serif; }
         
-        /* Qiymət filtrləri */
+        /* Filtrlər */
         .filters { background: #fff; padding: 10px 15px; display: flex; gap: 8px; overflow-x: auto; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 20; align-items: center; flex-shrink: 0; }
         .filters::-webkit-scrollbar { display: none; }
         .filter-btn { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background: #fff; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; }
@@ -17,35 +17,89 @@
         .color-dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #999; }
 
         /* Xəritə sahəsi */
-        #map-container { flex: 1; position: relative; overflow: hidden; background: #eef0f2; }
+        #map-container { flex: 1; position: relative; overflow: hidden; background: #eef0f2; touch-action: none; cursor: grab; }
+        #map-container:active { cursor: grabbing; }
+        
+        /* Köhnə SVG viewBox yerinə CSS Transform istifadə edirik */
+        #zoom-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            transform-origin: 0 0; will-change: transform; 
+            transition: transform 0.2s ease-out;
+        }
+        
         #bg-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; object-fit: contain; }
-        #seats-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        /* Alt hissə */
-        .bottom-bar { background: #fff; padding: 15px 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 10; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .btn-continue { background: #ffdd00; border: none; padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer; }
-        
-        /* Zoom */
-        .zoom-controls { position: absolute; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 10; }
+        /* Bura "meet" qalır ki, oturacaqlar xəritəyə tam otursun */
+        #seats-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+
+        /* Zoom Düymələri */
+        .zoom-controls { position: absolute; right: 20px; bottom: 100px; display: flex; flex-direction: column; gap: 10px; z-index: 10; }
         .zoom-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid #ddd; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); user-select: none; }
+
+        /* Mərkəzdəki Yüklənmə (Şəkil 4) */
+        #center-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 50; }
+        .loader-circle { width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.8); border-top: 3px solid #0d6efd; border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Aşağıdakı "Davam et" Paneli (Şəkil 5) */
+        #bottom-sheet { 
+            position: absolute; bottom: -150px; left: 0; width: 100%; 
+            background: #fff; border-radius: 20px 20px 0 0; 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 30;
+            transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding-bottom: 20px;
+        }
+        #bottom-sheet.show { bottom: 0; }
+        
+        .sheet-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 15px 20px; border-bottom: 1px solid #f0f0f0; }
+        .seat-info { display: flex; flex-direction: column; gap: 4px; }
+        .seat-info .title { font-size: 12px; color: #777; font-weight: 600; text-transform: uppercase; }
+        .seat-info .price { font-size: 18px; font-weight: bold; color: #222; }
+        .close-btn { background: #f0f0f0; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; justify-content: center; align-items: center; color: #555; }
+        
+        .sheet-footer { padding: 15px 20px 0; }
+        .btn-continue { 
+            width: 100%; background: #ffdd00; border: none; padding: 16px; border-radius: 12px; 
+            font-weight: bold; font-size: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; 
+        }
+        .btn-continue .arrow { font-size: 20px; }
     </style>
 </head>
 <body>
 
     <div class="filters" id="filters"></div>
 
-    <div id="map-container" id="map-container">
-        <img id="bg-svg" src="bg.svg" alt="Xəritə">
-        <svg id="seats-layer"></svg>
+    <div id="map-container">
+        <div id="zoom-layer">
+            <img id="bg-svg" src="bg.svg" alt="Xəritə">
+            <!-- Bura meet olaraq qalır -->
+            <svg id="seats-layer" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        
+        <div id="center-loader">
+            <div class="loader-circle"></div>
+        </div>
+
         <div class="zoom-controls">
-            <div class="zoom-btn" onclick="zoomIn()">+</div>
-            <div class="zoom-btn" onclick="zoomOut()">-</div>
+            <div class="zoom-btn" onclick="zoomIn(event)">+</div>
+            <div class="zoom-btn" onclick="zoomOut(event)">-</div>
         </div>
     </div>
 
-    <div class="bottom-bar">
-        <div>Seçilmiş: <b id="selected-count">0</b> | Məbləğ: <b id="total-price">0</b> ₼</div>
-        <button class="btn-continue" onclick="goToCheckout()">Davam et</button>
+    <!-- Aşağı Sürüşən Panel -->
+    <div id="bottom-sheet">
+        <div class="sheet-header">
+            <div class="seat-info">
+                <div class="title" id="sheet-seat-title">Sıra: 4, Yer: 14</div>
+                <div class="price" id="sheet-seat-price">200 ₼</div>
+            </div>
+            <button class="close-btn" onclick="deselectSeat()">✕</button>
+        </div>
+        <div class="sheet-footer">
+            <button class="btn-continue" onclick="goToCheckout()">
+                <span id="btn-continue-text">Davam et: 200 ₼</span>
+                <span class="arrow">›</span>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -53,16 +107,18 @@
         let totalAmount = 0;
         let activePriceFilter = null;
         
-        // SVG viewBox zoom üçün
         let baseWidth = 7381, baseHeight = 7519;
-        let currentViewBox = { x: 0, y: 0, w: baseWidth, h: baseHeight };
-
-        const priceList = [70, 80, 90, 100, 110, 120, 140, 160, 200, 300, 350, 400, 500];
-        const activePrices = [90, 100, 110, 120, 300, 400, 500];
         
+        // CSS Zoom üçün
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+
+        const priceList = [50, 70, 90, 100, 110, 120, 140, 160, 200, 300, 350, 400, 500];
+        const activePrices = [120, 200, 300, 400, 500];
         const colorMap = {
-            90: '#673AB7', 100: '#3F51B5', 110: '#2196F3',
-            120: '#03A9F4', 300: '#8BC34A', 400: '#FFC107', 500: '#FF9800'
+            120: '#00BCD4', 140: '#F48FB1', 160: '#AD1457', 200: '#1A237E', 
+            300: '#64B5F6', 350: '#F06292', 400: '#81C784', 500: '#9575CD'
         };
 
         Promise.all([
@@ -71,20 +127,18 @@
         ]).then(([mapData, ticketsData]) => {
             drawMap(mapData, ticketsData);
             initFilters();
+            initPanZoom();
         }).catch(err => console.error('Xəta:', err));
 
-        // Filtrlər
         function initFilters() {
             const filtersContainer = document.getElementById('filters');
             priceList.forEach(price => {
                 const btn = document.createElement('button');
                 btn.className = 'filter-btn';
-                
                 const dot = document.createElement('div');
                 dot.className = 'color-dot';
                 dot.style.backgroundColor = colorMap[price] || '#fff';
                 btn.appendChild(dot);
-
                 const text = document.createElement('span');
                 text.innerText = price + ' ₼';
                 btn.appendChild(text);
@@ -100,8 +154,6 @@
 
         function toggleFilter(price) {
             activePriceFilter = (activePriceFilter === price) ? null : price;
-            
-            // Düymələri yenilə
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const btnPrice = parseInt(btn.querySelector('span').innerText);
                 btn.classList.toggle('active', btnPrice === activePriceFilter);
@@ -109,7 +161,6 @@
             applyFilter();
         }
 
-        // Xəritəni çəkmə
         function drawMap(mapData, ticketsData) {
             const svg = document.getElementById('seats-layer');
             const bgImg = document.getElementById('bg-svg');
@@ -120,17 +171,7 @@
                 if (mapData.scheme2DDOT.bg_url) bgImg.src = mapData.scheme2DDOT.bg_url;
             }
 
-            // SVG viewBox təyin edirik
             svg.setAttribute('viewBox', `0 0 ${baseWidth} ${baseHeight}`);
-            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            currentViewBox = { x: 0, y: 0, w: baseWidth, h: baseHeight };
-
-            const sectorPrices = {};
-            if (ticketsData && ticketsData.data) {
-                ticketsData.data.forEach(item => {
-                    if (item.sector_id && item.price) sectorPrices[item.sector_id] = item.price;
-                });
-            }
 
             if (mapData.seats && mapData.seats.length > 0) {
                 const fragment = document.createDocumentFragment();
@@ -140,23 +181,18 @@
                     let y = seat.config2D ? seat.config2D.y : seat.y;
 
                     if (x !== undefined && y !== undefined) {
-                        let price = sectorPrices[seat.sector_id];
-                        if (!price || !activePrices.includes(price)) {
-                            price = activePrices[index % activePrices.length];
-                        }
-
-                        const isOccupied = (index % 10) < 6;
+                        let price = activePrices[index % activePrices.length];
+                        
+                        const isOccupied = (index % 10) < 6; // 60% dolu
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', x);
                         circle.setAttribute('cy', y);
-                        circle.setAttribute('r', '8'); // Bir az böyüdürük ki, zoom edəndə yaxşı görünsün
+                        circle.setAttribute('r', '9'); // Orijinal ölçü
                         circle.dataset.price = price;
-                        circle.dataset.originalFill = isOccupied ? '#dcdcdc' : (colorMap[price] || '#fff');
+                        circle.dataset.index = index;
                         
                         if (isOccupied) {
-                            circle.setAttribute('fill', '#dcdcdc');
-                            circle.setAttribute('stroke', '#bbb');
-                            circle.setAttribute('stroke-width', '1');
+                            circle.setAttribute('fill', '#e0e0e0');
                             circle.dataset.status = 'occupied';
                         } else {
                             circle.setAttribute('fill', colorMap[price] || '#fff');
@@ -164,21 +200,11 @@
                             circle.setAttribute('stroke-width', '1');
                             circle.style.cursor = 'pointer';
                             circle.dataset.status = 'available';
+                            circle.dataset.originalFill = colorMap[price] || '#fff';
                             
-                            circle.onclick = function() {
-                                if (this.getAttribute('stroke') === '#e91e63') {
-                                    this.setAttribute('stroke', '#333');
-                                    this.setAttribute('stroke-width', '1');
-                                    selectedSeats--;
-                                    totalAmount -= price;
-                                } else {
-                                    this.setAttribute('stroke', '#e91e63');
-                                    this.setAttribute('stroke-width', '4');
-                                    selectedSeats++;
-                                    totalAmount += price;
-                                }
-                                document.getElementById('selected-count').innerText = selectedSeats;
-                                document.getElementById('total-price').innerText = totalAmount;
+                            circle.onclick = function(e) {
+                                e.stopPropagation();
+                                handleSeatClick(this);
                             };
                         }
                         fragment.appendChild(circle);
@@ -188,63 +214,172 @@
             }
         }
 
-        // Filtr tətbiqi - yalnız görünən elementləri dəyişirik
+        function handleSeatClick(el) {
+            if (el.dataset.selected === '1') return;
+
+            // Köhnə seçilmişləri sıfırla
+            document.querySelectorAll('#seats-layer circle[data-selected="1"]').forEach(c => {
+                c.dataset.selected = '0';
+                c.setAttribute('stroke', '#333');
+                c.setAttribute('stroke-width', '1');
+            });
+
+            // Yüklənməni göstər
+            const loader = document.getElementById('center-loader');
+            loader.style.display = 'block';
+
+            el.dataset.selected = '1';
+            el.setAttribute('stroke', '#e91e63');
+            el.setAttribute('stroke-width', '4');
+
+            // Mərkəzə fokuslanma
+            const cx = parseFloat(el.getAttribute('cx'));
+            const cy = parseFloat(el.getAttribute('cy'));
+            focusOnSeat(cx, cy);
+
+            // 0.5 saniyə sonra yüklənməni gizlət və paneli göstər
+            setTimeout(() => {
+                loader.style.display = 'none';
+                showBottomSheet(el.dataset.price, el.dataset.index);
+            }, 500);
+        }
+
+        // Mərkəzə fokuslanma riyaziyyatı
+        function focusOnSeat(cx, cy) {
+            const container = document.getElementById('map-container');
+            const rect = container.getBoundingClientRect();
+            
+            scale = 2.5; 
+            
+            // Xəritə "meet" ilə mərkəzə yerləşdiyi üçün koordinatları tapırıq
+            const svgRatio = baseWidth / baseHeight;
+            const containerRatio = rect.width / rect.height;
+            
+            let scaleX, scaleY, offsetX, offsetY;
+            if (containerRatio > svgRatio) {
+                scaleY = rect.height / baseHeight;
+                scaleX = scaleY;
+                offsetX = (rect.width - baseWidth * scaleX) / 2;
+                offsetY = 0;
+            } else {
+                scaleX = rect.width / baseWidth;
+                scaleY = scaleX;
+                offsetX = 0;
+                offsetY = (rect.height - baseHeight * scaleY) / 2;
+            }
+            
+            const seatScreenX = offsetX + (cx * scaleX * scale);
+            const seatScreenY = offsetY + (cy * scaleY * scale);
+            
+            const targetX = rect.width / 2;
+            const targetY = rect.height / 2;
+            
+            translateX = targetX - seatScreenX;
+            translateY = targetY - seatScreenY;
+            
+            updateTransform(true);
+        }
+
+        function showBottomSheet(price, index) {
+            document.getElementById('sheet-seat-title').innerText = `Sıra: ${(index % 20) + 1}, Yer: ${(index % 15) + 1}`;
+            document.getElementById('sheet-seat-price').innerText = price + ' ₼';
+            document.getElementById('btn-continue-text').innerText = `Davam et: ${price} ₼`;
+            document.getElementById('bottom-sheet').classList.add('show');
+        }
+
+        function deselectSeat() {
+            document.getElementById('bottom-sheet').classList.remove('show');
+            document.querySelectorAll('#seats-layer circle[data-selected="1"]').forEach(c => {
+                c.dataset.selected = '0';
+                c.setAttribute('stroke', '#333');
+                c.setAttribute('stroke-width', '1');
+            });
+        }
+
+        function goToCheckout() {
+            const selected = document.querySelector('#seats-layer circle[data-selected="1"]');
+            if (!selected) return;
+            const price = selected.dataset.price;
+            window.location.href = `azericard/azericard-3ds.html?amount=${price}&seats=1`;
+        }
+
         function applyFilter() {
-            const allSeats = document.querySelectorAll('#seats-layer circle');
-            allSeats.forEach(seat => {
+            document.querySelectorAll('#seats-layer circle').forEach(seat => {
                 if (seat.dataset.status === 'occupied') return;
-                
                 const seatPrice = parseInt(seat.dataset.price);
                 const isMatch = activePriceFilter === null || seatPrice === activePriceFilter;
                 
-                // Opacity əvəzinə fill dəyişirik (daha sürətli)
                 if (isMatch) {
                     seat.setAttribute('fill', seat.dataset.originalFill);
                     seat.style.opacity = '1';
                     seat.style.pointerEvents = 'auto';
                 } else {
                     seat.setAttribute('fill', '#f0f0f0');
-                    seat.style.opacity = '0.3';
+                    seat.style.opacity = '0.2';
                     seat.style.pointerEvents = 'none';
                 }
             });
         }
 
-        // SVG viewBox ilə zoom (donma yoxdur)
-        function zoomIn() {
-            if (currentViewBox.w > baseWidth * 0.2) {
-                currentViewBox.x += currentViewBox.w * 0.1;
-                currentViewBox.y += currentViewBox.h * 0.1;
-                currentViewBox.w *= 0.8;
-                currentViewBox.h *= 0.8;
-                updateViewBox();
-            }
+        // === YUMŞAQ ZOOM VƏ SÜRÜŞDÜRMƏ ===
+        function initPanZoom() {
+            const container = document.getElementById('map-container');
+            let isDragging = false;
+            let startX, startY;
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+            });
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform(false);
+            });
+            container.addEventListener('mouseup', () => { isDragging = false; });
+            container.addEventListener('mouseleave', () => { isDragging = false; });
+
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - translateX;
+                    startY = e.touches[0].clientY - translateY;
+                }
+            }, {passive: true});
+            container.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    e.preventDefault();
+                    translateX = e.touches[0].clientX - startX;
+                    translateY = e.touches[0].clientY - startY;
+                    updateTransform(false);
+                }
+            }, {passive: false});
+            container.addEventListener('touchend', () => { isDragging = false; });
         }
 
-        function zoomOut() {
-            if (currentViewBox.w < baseWidth * 1.5) {
-                currentViewBox.x -= currentViewBox.w * 0.125;
-                currentViewBox.y -= currentViewBox.h * 0.125;
-                currentViewBox.w *= 1.25;
-                currentViewBox.h *= 1.25;
-                if (currentViewBox.x < 0) currentViewBox.x = 0;
-                if (currentViewBox.y < 0) currentViewBox.y = 0;
-                if (currentViewBox.x + currentViewBox.w > baseWidth) currentViewBox.x = baseWidth - currentViewBox.w;
-                if (currentViewBox.y + currentViewBox.h > baseHeight) currentViewBox.y = baseHeight - currentViewBox.h;
-                updateViewBox();
-            }
+        function updateTransform(animate = true) {
+            const layer = document.getElementById('zoom-layer');
+            if (animate) layer.style.transition = 'transform 0.3s ease-out';
+            else layer.style.transition = 'none';
+            
+            layer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
 
-        function updateViewBox() {
-            const svg = document.getElementById('seats-layer');
-            svg.setAttribute('viewBox', `${currentViewBox.x} ${currentViewBox.y} ${currentViewBox.w} ${currentViewBox.h}`);
+        function zoomIn(e) {
+            if(e) e.stopPropagation();
+            scale += 0.3;
+            if (scale > 4) scale = 4;
+            updateTransform(true);
         }
 
-        function goToCheckout() {
-            if (selectedSeats === 0) {
-                alert('Zəhmət olmasa ən azı bir oturacaq seçin!');
-                return;
-            }
-            window.location.href = `azericard/kart.html?amount=${totalAmount}&seats=${selectedSeats}`;
+        function zoomOut(e) {
+            if(e) e.stopPropagation();
+            scale -= 0.3;
+            if (scale < 0.6) scale = 0.6;
+            updateTransform(true);
         }
     </script>
+</body>
+</html>

