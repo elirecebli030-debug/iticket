@@ -1,0 +1,367 @@
+@font-face {
+  font-family: Inter;
+  src: url(../fonts/Inter-VariableFont_slnt,wght.ttf);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  list-style: none;
+  box-sizing: border-box;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] { -moz-appearance: textfield; }
+
+button { cursor: pointer }
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.all {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  padding: 20px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main {
+  width: 100%;
+  max-width: 480px;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+
+header {
+  width: 100%;
+  padding: 16px 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  margin-bottom: 24px;
+}
+
+.header-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 24px;
+}
+
+.abb-logo img { height: 66px; width: auto; }
+.azericard-logo img { height: 45px; width: auto; }
+
+.card-call {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+}
+
+.card-call img {
+  height: 32px;
+  width: auto;
+  transition: transform 0.2s ease;
+}
+
+.form-content {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+}
+
+.form-content2 { margin: 32px 0; }
+
+section h1 {
+  color: #1a1f36;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+label {
+  display: block;
+  font-family: Inter;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+footer {
+  width: 100%;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+
+.footer_1, .footer_2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer_1 img, .footer_2 img {
+  height: 24px;
+  width: auto;
+  opacity: 0.8;
+}
+
+input:focus { outline: none; }
+
+.field-container1 {
+  margin-bottom: 17px;
+  position: relative;
+}
+
+.cardnumber_img {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid rgb(206, 206, 207);
+  border-radius: 12px;
+  height: 56px;
+}
+
+.cardnumber_img:focus-within { border-color: #2058BB; }
+.cardnumber_img.error-input { border-color: #dc3545; }
+
+input {
+  width: 100%;
+  border: none;
+  font-size: 16px;
+  background: transparent;
+}
+
+.cardnumber_img input {
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+.field-container2 {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.field-container2 .field-container {
+  padding: 6px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgb(206, 206, 207);
+  border-radius: 12px;
+  height: 56px;
+  flex: 1;
+}
+
+.field-container2 .field-container_cvc {
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgb(206, 206, 207);
+  border-radius: 12px;
+  height: 56px;
+  flex: 1;
+  position: relative;
+  background: white;
+}
+
+.field-container2 #expirationdate { font-size: 16px; }
+
+.field_cvc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background: #1e293b;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 14px;
+}
+
+.tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+.field-container ::placeholder { color: black; font-size: 14px; }
+
+.svgBox { flex: 1; }
+
+.svgBox ::placeholder {
+  color: black;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.svgBox svg {
+  max-height: 50px;
+  width: 33px;
+  position: absolute;
+  right: 12px;
+  top: 1.4px;
+}
+
+.error-input { border-color: #dc3545 !important; }
+.error-text { color: #dc3545; font-size: 14px; margin-top: 4px; }
+
+.form-button {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-button button {
+  padding: 16px 0px;
+  border-radius: 12px;
+  border: none;
+}
+
+.submitBtn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.submitBtn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+#cnltBtn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.amount-display {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #0D0D19;
+}
+
+/* 3DS səhifəsi */
+.transaction-details {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.amount-display-large {
+  font-size: 24px;
+  color: #2c3e50;
+  font-weight: bold;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.datetime-display {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.card-info {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.card-info img {
+  width: 40px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.card-info span {
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 767px) {
+  .main { padding: 0 16px; }
+  .form-content { padding: 20px; }
+  .field-container2 { flex-direction: column; gap: 16px; }
+  .abb-logo img { height: 45px; }
+  .azericard-logo img { height: 33px; }
+  .footer_1, .footer_2 { gap: 20px; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

