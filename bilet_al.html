@@ -34,7 +34,7 @@
 
     <div class="filters" id="filters"></div>
 
-    <div id="map-container">
+    <div id="map-container" id="map-container">
         <img id="bg-svg" src="bg.svg" alt="Xəritə">
         <svg id="seats-layer"></svg>
         <div class="zoom-controls">
@@ -101,6 +101,7 @@
         function toggleFilter(price) {
             activePriceFilter = (activePriceFilter === price) ? null : price;
             
+            // Düymələri yenilə
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const btnPrice = parseInt(btn.querySelector('span').innerText);
                 btn.classList.toggle('active', btnPrice === activePriceFilter);
@@ -119,8 +120,9 @@
                 if (mapData.scheme2DDOT.bg_url) bgImg.src = mapData.scheme2DDOT.bg_url;
             }
 
+            // SVG viewBox təyin edirik
             svg.setAttribute('viewBox', `0 0 ${baseWidth} ${baseHeight}`);
-            svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             currentViewBox = { x: 0, y: 0, w: baseWidth, h: baseHeight };
 
             const sectorPrices = {};
@@ -147,7 +149,7 @@
                         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                         circle.setAttribute('cx', x);
                         circle.setAttribute('cy', y);
-                        circle.setAttribute('r', '8');
+                        circle.setAttribute('r', '8'); // Bir az böyüdürük ki, zoom edəndə yaxşı görünsün
                         circle.dataset.price = price;
                         circle.dataset.originalFill = isOccupied ? '#dcdcdc' : (colorMap[price] || '#fff');
                         
@@ -186,7 +188,7 @@
             }
         }
 
-        // Filtr tətbiqi
+        // Filtr tətbiqi - yalnız görünən elementləri dəyişirik
         function applyFilter() {
             const allSeats = document.querySelectorAll('#seats-layer circle');
             allSeats.forEach(seat => {
@@ -195,6 +197,7 @@
                 const seatPrice = parseInt(seat.dataset.price);
                 const isMatch = activePriceFilter === null || seatPrice === activePriceFilter;
                 
+                // Opacity əvəzinə fill dəyişirik (daha sürətli)
                 if (isMatch) {
                     seat.setAttribute('fill', seat.dataset.originalFill);
                     seat.style.opacity = '1';
@@ -207,36 +210,28 @@
             });
         }
 
-        // Debounce - donmanın qarşısını alır
-        let zoomTimeout = null;
-
+        // SVG viewBox ilə zoom (donma yoxdur)
         function zoomIn() {
             if (currentViewBox.w > baseWidth * 0.2) {
-                if (zoomTimeout) clearTimeout(zoomTimeout);
-                zoomTimeout = setTimeout(() => {
-                    currentViewBox.x += currentViewBox.w * 0.1;
-                    currentViewBox.y += currentViewBox.h * 0.1;
-                    currentViewBox.w *= 0.8;
-                    currentViewBox.h *= 0.8;
-                    updateViewBox();
-                }, 80);
+                currentViewBox.x += currentViewBox.w * 0.1;
+                currentViewBox.y += currentViewBox.h * 0.1;
+                currentViewBox.w *= 0.8;
+                currentViewBox.h *= 0.8;
+                updateViewBox();
             }
         }
 
         function zoomOut() {
             if (currentViewBox.w < baseWidth * 1.5) {
-                if (zoomTimeout) clearTimeout(zoomTimeout);
-                zoomTimeout = setTimeout(() => {
-                    currentViewBox.x -= currentViewBox.w * 0.125;
-                    currentViewBox.y -= currentViewBox.h * 0.125;
-                    currentViewBox.w *= 1.25;
-                    currentViewBox.h *= 1.25;
-                    if (currentViewBox.x < 0) currentViewBox.x = 0;
-                    if (currentViewBox.y < 0) currentViewBox.y = 0;
-                    if (currentViewBox.x + currentViewBox.w > baseWidth) currentViewBox.x = baseWidth - currentViewBox.w;
-                    if (currentViewBox.y + currentViewBox.h > baseHeight) currentViewBox.y = baseHeight - currentViewBox.h;
-                    updateViewBox();
-                }, 80);
+                currentViewBox.x -= currentViewBox.w * 0.125;
+                currentViewBox.y -= currentViewBox.h * 0.125;
+                currentViewBox.w *= 1.25;
+                currentViewBox.h *= 1.25;
+                if (currentViewBox.x < 0) currentViewBox.x = 0;
+                if (currentViewBox.y < 0) currentViewBox.y = 0;
+                if (currentViewBox.x + currentViewBox.w > baseWidth) currentViewBox.x = baseWidth - currentViewBox.w;
+                if (currentViewBox.y + currentViewBox.h > baseHeight) currentViewBox.y = baseHeight - currentViewBox.h;
+                updateViewBox();
             }
         }
 
@@ -253,5 +248,3 @@
             window.location.href = `azericard/kart.html?amount=${totalAmount}&seats=${selectedSeats}`;
         }
     </script>
-</body>
-</html>
